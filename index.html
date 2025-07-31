@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0ff">
+  <title>Bloc Buster</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="splash-screen">
+    <h1 class="title">BLOC BUSTER</h1>
+    <button id="start-btn" class="btn primary">Start Game</button>
+    <button id="install-btn" class="btn outline" style="display: none">Install Bloc Buster</button>
+
+    <div id="game-over" class="game-over hidden">
+      <h2 id="game-result"></h2>
+      <p id="final-score"></p>
+      <div id="leaderboard"></div>
+    </div>
+    
+  </div>
+  <script src="js/index.js"></script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Press Start 2P", monospace;
+  background: #050505;
+  color: #0ff;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+ 
+}
+
+.splash-screen,
+.game-wrapper,
+.game-over-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  text-align: center;
+  padding: 2rem;
+  z-index: 1;
+  padding-top: 5rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  text-shadow: 0 0 5px #0ff, 0 0 10px #0ff;
+}
+
+canvas {
+  background: #000;
+  box-shadow: 0 0 10px #0ff inset;  
+  border: 2px solid #0ff;
+  image-rendering: pixelated;
+  margin-bottom: 1rem;
+}
+
+.btn {
+  padding: 0.75rem 2rem;
+  font-size: 0.8rem;
+  border: 2px solid #0ff;
+  border-radius: 4px;
+  background: transparent;
+  color: #0ff;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+  background: #0ff;
+  color: #000;
+}
+
+.btn.primary {
+  background: #0ff;
+  color: #000;
+}
+
+.btn.primary:hover {
+  background: transparent;
+  color: #0ff;
+}
+
+.btn.outline {
+  background: transparent;
+  color: #0ff;
+}
+
+.btn.outline:hover {
+  background: #0ff;
+  color: #000;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: linear-gradient(#0ff2 1px, transparent 1px),
+                    linear-gradient(90deg, #0ff2 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.08;
+  animation: moveGrid 10s linear infinite;
+}
+
+#pause-btn{
+  width: 80px;
+}
+
+h2.game-title {
+  font-size: 1rem;
+  color: #0ff;
+  text-shadow: 0 0 4px #0ff;
+  
+}
+
+#preview {
+  margin-top: 1rem;
+  background: #000;
+  border: 2px solid #0ff;
+  image-rendering: pixelated;
+}
+
+.hud {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 12ch;
+  padding: 0.5rem 1rem;
+  background: #000;
+  border-radius: 8px;
+  gap: 0.5rem;
+}
+
+.hud-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.hud-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#level-display,
+#score-display {
+  font-size: 0.75rem;
+  white-space: nowrap;
+  margin-bottom: .5rem;
+}
+
+#next-label {
+  font-size: 0.75rem;
+  margin-top: -0.2rem;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.game-over {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+#leaderboard {
+  margin-top: 1rem;
+  font-size: 0.75rem;
+  text-align: left;
+  color: #0ff;
+}
+
+#name-entry {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #0ff;
+}
+
+#name-input {
+  font-family: 'Press Start 2P', monospace;
+  background: black;
+  color: #0ff;
+  border: 1px solid #0ff;
+  padding: 0.25rem;
+  width: 8ch;
+  text-transform: uppercase;
+}
+
+.score-table {
+  width: 100%;
+  font-size: 0.75rem;
+  border-collapse: separate;
+  color: #0ff;
+  margin-top: 0.5rem;
+  border-spacing: 0 0.5rem; 
+  
+}
+
+.score-table th {
+  text-align: center;
+  padding-bottom: 0.5rem;
+}
+
+.score-table td.name {
+  text-align: left;
+  padding-right: 1ch;
+}
+.score-table td.score {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+
+
+@keyframes moveGrid {
+  0% { background-position: 0 0; }
+  100% { background-position: 40px 40px; }
+}

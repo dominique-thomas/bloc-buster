@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bloc Buster</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="game-over-screen">
+    <h1 id="game-result">Game Over</h1>
+    <p id="final-score">Final Score: 0</p>
+    <div id="name-entry" class="hidden">
+        <label for="name-input">Name:</label>
+        <input type="text" id="name-input" maxlength="10" value="DOM">
+        <button id="save-name" class="btn">Save</button>
+    </div>
+    <div id="leaderboard"></div>
+    <button id="back-btn" class="btn outline">Back to Menu</button>
+  </div>
+
+  <button id="clear-storage" class="btn outline hidden">Clear Leaderboard</button>
+
+  <script src="js/gameover.js"></script>
+</body>
+</html>

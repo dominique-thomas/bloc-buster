@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0ff">
+  <title>Bloc Buster - Game</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="game-wrapper">
+    <h2 class="game-title">BLOC BUSTER</h2>
+    <div class="hud">
+    <div class="hud-stats">
+        <p id="level-display">Level: 1</p>
+        <p id="score-display">Score: 0</p>
+    </div>
+    <div class="hud-preview">
+        <canvas id="preview" width="80" height="80"></canvas>
+        <p id="next-label">Next</p>
+    </div>
+    </div>
+
+    <canvas id="tetris" width="240" height="400"></canvas>
+
+    <div class="controls">
+      <button id="pause-btn" class="btn outline" onclick="pauseGame()">
+        <i class="fas fa-pause"></i>
+      </button>
+       <button id="restart-btn" class="btn outline" onclick="restartGame()">
+        <i class="fas fa-rotate-right"></i>
+      </button>
+      <button id="back-btn" class="btn outline">Back to Menu</button>
+    </div>
+  </div>
+  <script src="js/game.js"></script>
+</body>
+</html>
