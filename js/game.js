@@ -1,4 +1,5 @@
 const MAX_SCORE = 999999;
+const swipeThreshold = 30; 
 const canvas = document.getElementById("tetris");
 const context = canvas.getContext("2d");
 const arena = createMatrix(12, 20);
@@ -241,8 +242,9 @@ canvas.addEventListener("touchstart", e => {
   }
 });
 
-canvas.addEventListener("touchend", e => {
+canvas.addEventListener("touchend", (e) => {
   if (startX === null || startY === null) return;
+
   const endX = e.changedTouches[0].clientX;
   const endY = e.changedTouches[0].clientY;
   const dx = endX - startX;
@@ -250,17 +252,16 @@ canvas.addEventListener("touchend", e => {
   const absX = Math.abs(dx);
   const absY = Math.abs(dy);
 
-  if (Math.max(absX, absY) > 10) {
+  if (Math.max(absX, absY) > swipeThreshold) {
     if (absX > absY) {
-      if (dx > 0) playerMove(1);
-      else playerMove(-1);
+      dx > 0 ? playerMove(1) : playerMove(-1);
     } else {
-      if (dy > 0) playerDrop();
-      else hardDrop();
+      dy > 0 ? playerDrop() : hardDrop();
     }
   } else {
     playerRotate(1);
   }
+
   startX = null;
   startY = null;
 });
@@ -286,20 +287,11 @@ function update(time = 0) {
 }
 
 
-function restartGame(){
-  arena.forEach(row => row.fill(0));
-  player.score = 0;
-  player.level = 1;
-  dropInterval = 1000;
-  document.getElementById("score-display").textContent = "Score 0";
-  document.getElementById("level-display").textContent = "Level 1";
-  playerReset();
-
-  if (isPaused) {
-    isPaused = false;
-    pauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-    update();
-  }
+function restartGame() {
+  //document.body.classList.add("flash");
+  setTimeout(() => {
+    window.location.reload();
+  }, 150);
 }
 
 playerReset();
