@@ -11,29 +11,41 @@
 </head>
 <body>
   <div class="game-wrapper">
-    <div class="hud">
-    <div class="hud-stats">
-        <p id="level-display">Level: 1</p>
-        <p id="score-display">Score: 0</p>
+  <div class="hud">
+    <div class="hud-block">
+      <div class="hud-label">Level</div>
+      <div id="level-display" class="hud-value">1</div>
     </div>
-    <div class="hud-preview">
-        <canvas id="preview" width="80" height="80"></canvas>
-        <p id="next-label">Next</p>
+    <div class="hud-block">
+      <div class="hud-label">Score</div>
+      <div id="score-display" class="hud-value">0</div>
     </div>
-    </div>
+  </div>
 
     <canvas id="tetris" width="240" height="400"></canvas>
 
-    <div class="controls">
+    <div class="hud hud-right">
+      <canvas id="preview" width="80" height="80"></canvas>
+    </div>
+
+
+  </div>
+
+
+        <div class="controls">
       <button id="pause-btn" class="btn outline" onclick="pauseGame()">
         <i class="fas fa-pause"></i>
+        <span>Pause</span>
       </button>
-       <button id="restart-btn" class="btn outline" onclick="restartGame()">
-        <i class="fa-solid fa-power-off"></i>
       </button>
-      <button id="back-btn" class="btn outline">Back to Menu</button>
+      <button id="back-btn" class="btn outline">
+        <i class="fas fa-arrow-left"></i>
+        <span>Menu</span>
+      </button>
     </div>
-  </div>
+
+
+
   <script src="js/game.js"></script>
 </body>
 </html>

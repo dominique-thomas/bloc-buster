@@ -86,20 +86,28 @@ function collide(arena, player) {
 }
 
 function arenaSweep() {
-  let rowCount = 1;
+  let linesCleared = 0;
+
   outer: for (let y = arena.length - 1; y >= 0; --y) {
     for (let x = 0; x < arena[y].length; ++x) {
       if (arena[y][x] === 0) continue outer;
     }
+
     const row = arena.splice(y, 1)[0].fill(0);
     arena.unshift(row);
     ++y;
-    player.score += rowCount * 10;
+    linesCleared++;
+  }
+
+  if (linesCleared > 0) {
+    const linePoints = [0, 40, 100, 300, 1200];
+    player.score += linePoints[linesCleared] * (player.level + 1);
+    player.lines += linesCleared;
     player.score = Math.min(player.score, MAX_SCORE);
-    document.getElementById("score-display").textContent = `Score: ${player.score}`;
-    rowCount *= 2;
+    updateHUD();
   }
 }
+
 
 function playerDrop() {
   player.pos.y++;
@@ -108,30 +116,14 @@ function playerDrop() {
     merge(arena, player);
     playerReset();
     arenaSweep();
-    if (player.score >= player.level * 100) {
+    if (player.lines >= player.level * 10) {
       player.level++;
-      document.getElementById("level-display").textContent = `Level: ${player.level}`;
+      updateHUD();
       dropInterval = Math.max(100, 1000 - (player.level - 1) * 10);
       if (player.level > 100) endGame(true);
     }
   }
-  dropCounter = 0;
-}
 
-function hardDrop() {
-  while (!collide(arena, player)) {
-    player.pos.y++;
-  }
-  player.pos.y--;
-  merge(arena, player);
-  playerReset();
-  arenaSweep();
-  if (player.score >= player.level * 100) {
-    player.level++;
-    document.getElementById("level-display").textContent = `Level: ${player.level}`;
-    dropInterval = Math.max(100, 1000 - (player.level - 1) * 10);
-    if (player.level > 100) endGame(true);
-  }
   dropCounter = 0;
 }
 
@@ -173,8 +165,8 @@ function playerReset() {
   player.pos.y = 0;
   player.pos.x = (arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0);
 
-  document.getElementById("score-display").textContent = `Score: ${player.score}`;
-  document.getElementById("level-display").textContent = `Level: ${player.level}`;
+  document.getElementById("score-display").textContent = player.score;
+  document.getElementById("level-display").textContent = player.level;
 
   if (collide(arena, player)) endGame(false);
 }
@@ -207,7 +199,10 @@ function drawPreview() {
   });
 }
 
-
+function updateHUD() {
+  document.getElementById("score-display").textContent = player.score;
+  document.getElementById("level-display").textContent = player.level;
+}
 
 function update(time = 0) {
   const deltaTime = time - lastTime;
@@ -226,7 +221,11 @@ function endGame(won) {
 document.addEventListener("keydown", e => {
   if (e.key === "ArrowLeft") playerMove(-1);
   if (e.key === "ArrowRight") playerMove(1);
-  if (e.key === "ArrowDown") playerDrop();
+  if (e.key === "ArrowDown") {
+    playerDrop();
+    player.score += 1;
+    updateHUD();
+  }
   if (e.key === "ArrowUp") playerRotate(1);
   if (e.key === "q") playerRotate(-1);
 });
@@ -239,10 +238,18 @@ canvas.addEventListener("touchstart", e => {
   if (e.touches.length === 1) {
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
+
+    // Tap to drop faster
+    dropHoldTimer = setInterval(() => {
+      playerDrop();
+    }, 120); 
   }
 });
 
-canvas.addEventListener("touchend", (e) => {
+canvas.addEventListener("touchend", e => {
+  clearInterval(dropHoldTimer);
+  dropHoldTimer = null;
+
   if (startX === null || startY === null) return;
 
   const endX = e.changedTouches[0].clientX;
@@ -252,11 +259,11 @@ canvas.addEventListener("touchend", (e) => {
   const absX = Math.abs(dx);
   const absY = Math.abs(dy);
 
+  // Swipe left or right
   if (Math.max(absX, absY) > swipeThreshold) {
     if (absX > absY) {
-      dx > 0 ? playerMove(1) : playerMove(-1);
-    } else {
-      dy > 0 ? playerDrop() : hardDrop();
+      if (dx > 0) playerMove(2);
+      else playerMove(-2);
     }
   } else {
     playerRotate(1);
@@ -270,9 +277,9 @@ function pauseGame(){
     const pauseBtn = document.getElementById("pause-btn");
     isPaused = !isPaused;
     pauseBtn.innerHTML = isPaused
-        ? '<i class="fas fa-play"></i>'
-        : '<i class="fas fa-pause"></i>';
-
+        ? '<i class="fas fa-play"></i><span>Play</span>'
+        : '<i class="fas fa-pause"></i><span>Pause</span>';
+        
   if (!isPaused) update();
 }
 
@@ -286,13 +293,16 @@ function update(time = 0) {
   requestAnimationFrame(update);
 }
 
-
-function restartGame() {
-  //document.body.classList.add("flash");
-  setTimeout(() => {
-    window.location.reload();
-  }, 150);
-}
-
 playerReset();
 update();
+
+function scaleGameToFit() {
+  const container = document.querySelector(".game-container");
+  const scaleX = window.innerWidth / container.offsetWidth;
+  const scaleY = window.innerHeight / container.offsetHeight;
+  const scale = Math.min(scaleX, scaleY, 1);
+  container.style.transform = `scale(${scale})`;
+}
+
+window.addEventListener("load", scaleGameToFit);
+window.addEventListener("resize", scaleGameToFit);

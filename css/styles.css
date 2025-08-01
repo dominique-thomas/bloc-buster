@@ -1,38 +1,34 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
-* {
+ :root {
+  --vh: 1vh;
+}
+
+body, html {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
+  height: 100%;
+  overflow: hidden;
 }
 
 body {
   font-family: "Press Start 2P", monospace;
   background: #050505;
   color: #0ff;
-  height: 100%;
-  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
   overflow: hidden;
-  margin: 0;
-  padding: 0;
- 
 }
 
-.splash-screen,
-.game-wrapper,
-.game-over-screen {
+.game-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2rem;
-  text-align: center;
-  padding: 2rem;
-  z-index: 1;
+  transform-origin: top center;
+  transition: transform 0.2s ease-in-out;
 }
 
 .title {
@@ -103,10 +99,7 @@ body::before {
   opacity: 0.08;
   animation: moveGrid 10s linear infinite;
 }
-
-#pause-btn{
-  width: 80px;
-}
+ 
 
 h2.game-title {
   font-size: 1rem;
@@ -124,18 +117,26 @@ h2.game-title {
 .hud {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  width: 12ch;
-  padding: 0.5rem 1rem;
-  background: #000;
-  border-radius: 8px;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 0.5rem;
 }
 
-.hud-stats {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+.hud-block {
+  padding: 0.5rem 1rem;
+  text-align: center;
+  width: 100px; 
+}
+
+.hud-label {
+  font-size: 0.9rem;
+  margin-bottom: 0.2rem;
+}
+
+.hud-value {
+  font-size: 1.2rem;
+  color: #fff;
+  min-width: 80px;
 }
 
 .hud-preview {
@@ -149,11 +150,6 @@ h2.game-title {
   font-size: 0.75rem;
   white-space: nowrap;
   margin-bottom: .5rem;
-}
-
-#next-label {
-  font-size: 0.75rem;
-  margin-top: 0.5rem;
 }
 
 .hidden {
@@ -229,6 +225,36 @@ h2.game-title {
 .btn.gradient:active {
   transform: scale(0.96);
 }
+
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-bottom: 1rem;
+  width: 100vh;
+  box-sizing: border-box;
+}
+
+.controls .btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+   border: none;
+  cursor: pointer;
+  width: 1rem;
+}
+
+.controls .btn i {
+  font-size: 1.25rem;
+}
+
+.controls .btn span {
+  font-size: 0.65rem;
+  margin-top: 0.25rem;
+}
+
 
 @keyframes moveGrid {
   0% { background-position: 0 0; }
