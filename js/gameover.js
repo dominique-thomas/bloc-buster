@@ -1,10 +1,13 @@
 const DEV_MODE = true;
+const audio = {
+  gameOver: new Audio('sfx/gameover.wav'),
+};
 const params = new URLSearchParams(window.location.search);
 const result = params.has("win") ? "You Win!" : params.has("fail") ? "Game Over" : "Finished";
 const defaultScores = [
   { name: "DOM", score: 6000 },
-  { name: "BOB", score: 5200 },
-  { name: "CHIP", score: 4800 },
+  { name: "CHIP", score: 5200 },
+  { name: "BOB", score: 4800 },
   { name: "XYZ", score: 4400 },
   { name: "LOL", score: 4000 },
   { name: "BOT", score: 3500 },
@@ -18,6 +21,14 @@ const score = Number(localStorage.getItem("blocbuster_score")) || 0;
 const name = "DOM"; 
 const entry = { name, score };
 let scores = JSON.parse(localStorage.getItem("blocbuster_leaderboard")) || [];
+
+
+audio.gameOver.volume = 0.4;
+audio.gameOver.play().catch(() => {
+  document.body.addEventListener("click", () => {
+    audio.gameOver.play();
+  }, { once: true });
+});
 
 if (!scores || !Array.isArray(scores) || scores.length === 0) {
   localStorage.setItem("blocbuster_leaderboard", JSON.stringify(defaultScores));

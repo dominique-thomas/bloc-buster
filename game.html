@@ -10,32 +10,34 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-  <div class="game-wrapper">
-  <div class="hud">
-    <div class="hud-block">
-      <div class="hud-label">Level</div>
-      <div id="level-display" class="hud-value">1</div>
-    </div>
-    <div class="hud-block">
-      <div class="hud-label">Score</div>
-      <div id="score-display" class="hud-value">0</div>
-    </div>
-  </div>
-
-    <canvas id="tetris" width="240" height="400"></canvas>
-
-    <div class="hud hud-right">
-      <canvas id="preview" width="80" height="80"></canvas>
+  <div class="game-container">
+    <div class="game-wrapper">
+    <div class="hud">
+      <div class="hud-block">
+        <div class="hud-label">Level</div>
+        <div id="level-display" class="hud-value">1</div>
+      </div>
+      <div class="hud-block">
+        <div class="hud-label">Score</div>
+        <div id="score-display" class="hud-value">0</div>
+      </div>
     </div>
 
+      <canvas id="game" width="240" height="400"></canvas>
 
-  </div>
+      <div class="hud hud-right">
+        <canvas id="preview" width="80" height="80"></canvas>
+      </div>
+    </div>
 
 
-        <div class="controls">
+    <div class="controls">
       <button id="pause-btn" class="btn outline" onclick="pauseGame()">
         <i class="fas fa-pause"></i>
         <span>Pause</span>
+      </button>
+      <button id="audio-toggle" class="btn outline">
+        <i class="fas fa-music"></i> <span>Mute</span>
       </button>
       </button>
       <button id="back-btn" class="btn outline">
@@ -43,6 +45,8 @@
         <span>Menu</span>
       </button>
     </div>
+    
+   </div> 
 
 
 

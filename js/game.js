@@ -1,17 +1,22 @@
 const MAX_SCORE = 999999;
 const swipeThreshold = 30; 
-const canvas = document.getElementById("tetris");
+const canvas = document.getElementById("game");
 const context = canvas.getContext("2d");
 const arena = createMatrix(12, 20);
+const audio = {
+  clear: new Audio('sfx/clear.wav'),
+  levelUp: new Audio('sfx/levelup.wav'),
+  music: new Audio('music/theme.wav'),
+};
 const colors = [
   null,
-  "#FF0D72",
-  "#0DC2FF",
-  "#0DFF72",
-  "#F538FF",
-  "#FF8E0D",
-  "#FFE138",
-  "#3877FF"
+  "#FF66C4", 
+  "#00D2B2", 
+  "#00FF9C",
+  "#C084FC", 
+  "#FFB347", 
+  "#FFF85B", 
+  "#809CFF"  
 ];
 const player = {
   pos: { x: 0, y: 0 },
@@ -19,13 +24,43 @@ const player = {
   score: 0,
   level: 1
 };
+
 let nextPiece = createPiece("TJLOSZI"[Math.floor(Math.random() * 7)]);
+let audioMuted = false;
 let isPaused = false;
 let dropCounter = 0;
 let dropInterval = 1000;
 let lastTime = 0;
 
 context.scale(20, 20);
+
+Object.entries(audio).forEach(([key, sound]) => {
+  sound.volume = 0.4;
+  if (key === 'music') sound.loop = true;
+});
+
+audio.music.volume = 0.15;
+audio.music.loop = true;
+
+audio.music.play().catch(() => {
+  document.body.addEventListener("click", () => {
+    audio.music.play();
+  }, { once: true });
+});
+
+document.getElementById("audio-toggle").addEventListener("click", () => {
+  audioMuted = !audioMuted;
+
+  Object.values(audio).forEach(sound => {
+    sound.muted = audioMuted;
+  });
+
+  const icon = document.querySelector("#audio-toggle i");
+  const label = document.querySelector("#audio-toggle span");
+
+  icon.className = audioMuted ? "fas fa-volume-mute" : "fas fa-volume-up";
+  label.textContent = audioMuted ? "Unmute" : "Mute";
+});
 
 function createMatrix(w, h) {
   const matrix = [];
@@ -59,8 +94,9 @@ function drawMatrix(matrix, offset) {
 }
 
 function draw() {
-  context.fillStyle = "#000";
+  context.fillStyle = "#041214ff";
   context.fillRect(0, 0, canvas.width, canvas.height);
+
   drawMatrix(arena, { x: 0, y: 0 });
   drawMatrix(player.matrix, player.pos);
 }
@@ -100,6 +136,10 @@ function arenaSweep() {
   }
 
   if (linesCleared > 0) {
+    audio.clear.currentTime = 0;
+    audio.clear.play();
+    console.log('called')
+
     const linePoints = [0, 40, 100, 300, 1200];
     player.score += linePoints[linesCleared] * (player.level + 1);
     player.lines += linesCleared;
@@ -117,6 +157,9 @@ function playerDrop() {
     playerReset();
     arenaSweep();
     if (player.lines >= player.level * 10) {
+      audio.levelUp.currentTime = 0;
+      audio.levelUp.play();
+
       player.level++;
       updateHUD();
       dropInterval = Math.max(100, 1000 - (player.level - 1) * 10);
@@ -126,6 +169,41 @@ function playerDrop() {
 
   dropCounter = 0;
 }
+
+function hardDrop() {
+  let dropDistance = 0;
+
+  while (!collide(arena, player)) {
+    player.pos.y++;
+    dropDistance++;
+  }
+  player.pos.y--;
+  merge(arena, player);
+
+  player.score += dropDistance * 2;
+  updateHUD();
+
+  // 💥 Flash landed piece before resetting
+  flashLandedBlocks(player.matrix, player.pos);
+
+  // Delay game logic slightly to show flash
+  setTimeout(() => {
+    playerReset();
+    arenaSweep();
+
+    if (player.lines >= player.level * 10) {
+      player.level++;
+      updateHUD();
+      dropInterval = Math.max(100, 1000 - (player.level - 1) * 10);
+      if (player.level > 100) endGame(true);
+    }
+
+    dropCounter = 0;
+  }, 100); // match flashLandedBlocks timeout
+}
+
+
+
 
 function playerMove(dir) {
   player.pos.x += dir;
@@ -175,9 +253,9 @@ function drawPreview() {
   const preview = document.getElementById("preview");
   const ctx = preview.getContext("2d");
 
-  ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset scale
+  ctx.setTransform(1, 0, 0, 1, 0, 0); 
   ctx.clearRect(0, 0, preview.width, preview.height);
-  ctx.scale(20, 20); // scale to grid size (1 unit = 20px)
+  ctx.scale(20, 20); 
 
   const gridSize = 4;
   const pieceWidth = nextPiece[0].length;
@@ -226,6 +304,10 @@ document.addEventListener("keydown", e => {
     player.score += 1;
     updateHUD();
   }
+  if (e.code === "Space") {
+    hardDrop();
+    updateHUD();
+  }
   if (e.key === "ArrowUp") playerRotate(1);
   if (e.key === "q") playerRotate(-1);
 });
@@ -242,6 +324,8 @@ canvas.addEventListener("touchstart", e => {
     // Tap to drop faster
     dropHoldTimer = setInterval(() => {
       playerDrop();
+      player.score += 1;
+      updateHUD();
     }, 120); 
   }
 });
@@ -262,11 +346,17 @@ canvas.addEventListener("touchend", e => {
   // Swipe left or right
   if (Math.max(absX, absY) > swipeThreshold) {
     if (absX > absY) {
-      if (dx > 0) playerMove(2);
-      else playerMove(-2);
+      if (dx > 0) playerMove(1);
+      else playerMove(-1);
+    } else {
+      if (dy > 0) {
+        // swipe down (soft drop?)
+      } else {
+        hardDrop(); 
+      }
     }
   } else {
-    playerRotate(1);
+    playerRotate(1); 
   }
 
   startX = null;
@@ -296,6 +386,27 @@ function update(time = 0) {
 playerReset();
 update();
 
+
+function flashLandedBlocks(matrix, pos) {
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  drawMatrix(matrix, pos, "#fff"); // draw in white
+}
+
+function drawMatrix(matrix, offset, overrideColor = null) {
+  matrix.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value !== 0) {
+        context.fillStyle = overrideColor || colors[value];
+        context.fillRect(x + offset.x, y + offset.y, 1, 1);
+        context.strokeStyle = "#111";
+        context.lineWidth = 0.05;
+        context.strokeRect(x + offset.x, y + offset.y, 1, 1);
+      }
+    });
+  });
+}
+
+
 function scaleGameToFit() {
   const container = document.querySelector(".game-container");
   const scaleX = window.innerWidth / container.offsetWidth;
@@ -306,3 +417,5 @@ function scaleGameToFit() {
 
 window.addEventListener("load", scaleGameToFit);
 window.addEventListener("resize", scaleGameToFit);
+
+
