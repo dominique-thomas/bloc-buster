@@ -505,5 +505,5 @@ canvas {
     font-size: clamp(1rem, 6vmin, 3rem);
   }
 
-   :root { --cab-nudge-x: -0.8px; } 
+   :root { --cab-nudge-x: -1px; } 
 }
