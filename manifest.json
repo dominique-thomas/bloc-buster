@@ -1,7 +1,7 @@
 {
   "name": "Bloc Buster",
   "short_name": "Bloc Buster",
-  "start_url": "/bloc-buster/",
+  "start_url": "/bloc-buster/index.html",
   "description": "A retro-inspired falling block puzzle game.",
   "scope": "/bloc-buster/",
   "display": "standalone",
