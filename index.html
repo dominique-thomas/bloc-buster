@@ -1,29 +1,54 @@
+<!--
+  Project: Bloc Buster
+  Description: Entry point of the game.
+  Author: Dominique Thomas (github.com/dominique-thomas)
+  License: Shared publicly for demonstration purposes only. Reuse or redistribution not permitted without permission.
+-->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">  
+
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/icons/icon-180.png">
   <meta name="theme-color" content="#0ff">
-  <title>Bloc Buster</title>
+
+  <title>Bloc Buster - Home</title>
   <link rel="stylesheet" href="css/styles.css">
   <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
-<body>
-  <div class="splash-screen">
-    <h1 class="title glitch" data-text="BLOC BUSTER">BLOC BUSTER</h1>
-    <button id="start-btn" class="btn primary">Start Game</button>
-    <button id="install-btn" class="btn outline" style="display: none">Install Bloc Buster</button>
 
-    <div id="game-over" class="game-over hidden">
-      <h2 id="game-result"></h2>
-      <p id="final-score"></p>
-      <div id="leaderboard"></div>
+<body>
+  <div class="arcade-container">
+    <div class="arcade-window">
+      <div class="splash-screen">
+        <div class="hud-top">
+          <span class="player-label text-glow">PLAYER 1</span>
+          <span class="high-score text-glow">HIGH SCORE 000000</span>
+        </div>
+
+        <button id="start-btn" class="btn primary">START GAME</button>
+        <button id="install-btn" class="btn outline hidden">INSTALL GAME</button>
+
+        <div class="hud-bottom">
+          <span class="blinking text-glow">1 CREDIT</span>
+        </div>
+      </div>
     </div>
-    
+
+    <div class="marquee-text">
+      <h1 class="title glitch emphasis" data-text="BLOC BUSTER">BLOC BUSTER</h1>
+    </div>
+
+    <div class="arcade-overlay"></div>
   </div>
+
   <script src="js/index.js"></script>
 </body>
+
 </html>

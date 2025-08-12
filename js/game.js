@@ -1,5 +1,14 @@
+/*
+  Project: Bloc Buster
+  Description: Handles core game logic.
+  Author: Dominique Thomas (github.com/dominique-thomas)
+  License: Shared publicly for demonstration purposes only. Reuse or redistribution not permitted without permission.
+*/
+//----------------------------------
+//  Global Variables
+//----------------------------------
 const MAX_SCORE = 999999;
-const swipeThreshold = 30; 
+const swipeThreshold = 30;
 const canvas = document.getElementById("game");
 const context = canvas.getContext("2d");
 const arena = createMatrix(12, 20);
@@ -10,21 +19,26 @@ const audio = {
 };
 const colors = [
   null,
-  "#FF66C4", 
-  "#00D2B2", 
+  "#FF66C4",
+  "#00D2B2",
   "#00FF9C",
-  "#C084FC", 
-  "#FFB347", 
-  "#FFF85B", 
-  "#809CFF"  
+  "#C084FC",
+  "#FFB347",
+  "#FFF85B",
+  "#809CFF"
 ];
 const player = {
+  lines: 0,
   pos: { x: 0, y: 0 },
   matrix: null,
   score: 0,
   level: 1
 };
-
+let flashCells = [];
+let flashUntil = 0;
+let startX = 0;
+let startY = 0;
+let dropHoldTimer = 0;
 let nextPiece = createPiece("TJLOSZI"[Math.floor(Math.random() * 7)]);
 let audioMuted = false;
 let isPaused = false;
@@ -32,42 +46,53 @@ let dropCounter = 0;
 let dropInterval = 1000;
 let lastTime = 0;
 
+//----------------------------------
+//  Canvas/Audio Handlers
+//----------------------------------
 context.scale(20, 20);
 
-Object.entries(audio).forEach(([key, sound]) => {
-  sound.volume = 0.4;
-  if (key === 'music') sound.loop = true;
+Object.entries(audio).forEach(([key, audio]) => {
+  audio.volume = 0.4;
+  if (key === 'music') audio.loop = true;
 });
 
 audio.music.volume = 0.15;
 audio.music.loop = true;
 
-audio.music.play().catch(() => {
-  document.body.addEventListener("click", () => {
-    audio.music.play();
-  }, { once: true });
-});
+// Don't trigger if clicking HUD controls or overlays
+canvas.addEventListener("pointerdown", () => {
+  if (!audioMuted) {
+    audio.music.play().catch(() => { });
+  }
+}, { once: true });
 
-document.getElementById("audio-toggle").addEventListener("click", () => {
-  audioMuted = !audioMuted;
 
-  Object.values(audio).forEach(sound => {
-    sound.muted = audioMuted;
-  });
-
-  const icon = document.querySelector("#audio-toggle i");
-  const label = document.querySelector("#audio-toggle span");
-
-  icon.className = audioMuted ? "fas fa-volume-mute" : "fas fa-volume-up";
-  label.textContent = audioMuted ? "Unmute" : "Mute";
-});
-
+//----------------------------------
+//  Helper Functions
+//----------------------------------
+// Helper function used to create the matrix to store the game pieces
 function createMatrix(w, h) {
   const matrix = [];
   while (h--) matrix.push(new Array(w).fill(0));
   return matrix;
 }
 
+// Helper function used to display the matrix on the canvas
+function drawMatrix(matrix, offset, overrideColor = null) {
+  matrix.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value !== 0) {
+        context.fillStyle = overrideColor || colors[value];
+        context.fillRect(x + offset.x, y + offset.y, 1, 1);
+        context.strokeStyle = "#111";
+        context.lineWidth = 0.05;
+        context.strokeRect(x + offset.x, y + offset.y, 1, 1);
+      }
+    });
+  });
+}
+
+// Helper function used to create the game pieces
 function createPiece(type) {
   if (type === "T") return [[0, 0, 0], [1, 1, 1], [0, 1, 0]];
   if (type === "O") return [[2, 2], [2, 2]];
@@ -78,29 +103,28 @@ function createPiece(type) {
   if (type === "Z") return [[7, 7, 0], [0, 7, 7], [0, 0, 0]];
 }
 
-function drawMatrix(matrix, offset) {
-  matrix.forEach((row, y) => {
-    row.forEach((value, x) => {
-      if (value !== 0) {
-        context.fillStyle = colors[value];
-        context.fillRect(x + offset.x, y + offset.y, 1, 1);
-
-        context.strokeStyle = "#111";
-        context.lineWidth = 0.05;
-        context.strokeRect(x + offset.x, y + offset.y, 1, 1);
-      }
-    });
-  });
-}
-
+// Helper function used to draw the canvas arena and player (pieces)
 function draw() {
   context.fillStyle = "#041214ff";
   context.fillRect(0, 0, canvas.width, canvas.height);
 
   drawMatrix(arena, { x: 0, y: 0 });
   drawMatrix(player.matrix, player.pos);
+
+  // Flash the pieces
+  if (performance.now() < flashUntil && flashCells.length) {
+    const blinkOn = Math.floor(performance.now() / 80) % 2 === 0; // toggle ~12.5 fps
+    if (blinkOn) {
+      context.save();
+      context.globalAlpha = 0.9;
+      context.fillStyle = "#F7FBFF";
+      flashCells.forEach(({ x, y }) => context.fillRect(x, y, 1, 1));
+      context.restore();
+    }
+  }
 }
 
+// Helper function used to lock (merge) the player piece into the arena
 function merge(arena, player) {
   player.matrix.forEach((row, y) => {
     row.forEach((value, x) => {
@@ -109,6 +133,7 @@ function merge(arena, player) {
   });
 }
 
+// Helper function used to detect arena/player collision
 function collide(arena, player) {
   const [m, o] = [player.matrix, player.pos];
   for (let y = 0; y < m.length; ++y) {
@@ -121,47 +146,66 @@ function collide(arena, player) {
   return false;
 }
 
+// Helper function used to clear the arena line(s)
 function arenaSweep() {
-  let linesCleared = 0;
-
-  outer: for (let y = arena.length - 1; y >= 0; --y) {
-    for (let x = 0; x < arena[y].length; ++x) {
-      if (arena[y][x] === 0) continue outer;
-    }
-
-    const row = arena.splice(y, 1)[0].fill(0);
-    arena.unshift(row);
-    ++y;
-    linesCleared++;
+  const rows = [];
+  for (let y = arena.length - 1; y >= 0; --y) {
+    if (arena[y].every(v => v !== 0)) rows.push(y);
   }
+  if (!rows.length) return;
 
-  if (linesCleared > 0) {
+  // Blink the full rows first
+  flashCells = [];
+  rows.forEach(y => {
+    for (let x = 0; x < arena[y].length; x++) {
+      if (arena[y][x] !== 0) flashCells.push({ x, y });
+    }
+  });
+  flashUntil = performance.now() + 200;
+
+  // After the blink, actually clear & score
+  setTimeout(() => {
+    rows.sort((a, b) => b - a).forEach(y => {
+      const row = arena.splice(y, 1)[0].fill(0);
+      arena.unshift(row);
+    });
+
+    const linesCleared = rows.length;
+    const linePoints = [0, 100, 300, 500, 800];
+    const earned = linePoints[linesCleared] * player.level;
+
+    player.score += earned;
+    player.lines += linesCleared;
+    updateHUD();
+
     audio.clear.currentTime = 0;
     audio.clear.play();
-    console.log('called')
 
-    const linePoints = [0, 40, 100, 300, 1200];
-    player.score += linePoints[linesCleared] * (player.level + 1);
-    player.lines += linesCleared;
-    player.score = Math.min(player.score, MAX_SCORE);
-    updateHUD();
-  }
+    if (player.lines >= player.level * 5) {
+      player.level++;
+      audio.levelUp.currentTime = 0;
+      audio.levelUp.play();
+      dropInterval = Math.max(100, 1000 - (player.level - 1) * 10);
+    }
+  }, 200);
 }
 
-
+// Helper function used for "dropping" the player to the arena
 function playerDrop() {
   player.pos.y++;
+
   if (collide(arena, player)) {
     player.pos.y--;
     merge(arena, player);
     playerReset();
     arenaSweep();
-    if (player.lines >= player.level * 10) {
+
+    if (player.lines >= player.level * 5) {
       audio.levelUp.currentTime = 0;
       audio.levelUp.play();
-
       player.level++;
       updateHUD();
+
       dropInterval = Math.max(100, 1000 - (player.level - 1) * 10);
       if (player.level > 100) endGame(true);
     }
@@ -170,6 +214,7 @@ function playerDrop() {
   dropCounter = 0;
 }
 
+// Helper function for the player "hard drop" feature
 function hardDrop() {
   let dropDistance = 0;
 
@@ -183,10 +228,10 @@ function hardDrop() {
   player.score += dropDistance * 2;
   updateHUD();
 
-  // 💥 Flash landed piece before resetting
+  // Flash landed piece before resetting
   flashLandedBlocks(player.matrix, player.pos);
 
-  // Delay game logic slightly to show flash
+  // Delay game logic slightly to show a flash
   setTimeout(() => {
     playerReset();
     arenaSweep();
@@ -199,17 +244,27 @@ function hardDrop() {
     }
 
     dropCounter = 0;
-  }, 100); // match flashLandedBlocks timeout
+  }, 100);
 }
 
+// Helper function used to show that the block has landed; hard drops only
+function flashLandedBlocks(matrix, pos, duration = 160) {
+  flashCells = [];
+  matrix.forEach((row, y) => {
+    row.forEach((v, x) => {
+      if (v !== 0) flashCells.push({ x: x + pos.x, y: y + pos.y });
+    });
+  });
+  flashUntil = performance.now() + duration;
+}
 
-
-
+// Helper function to move the player left or right
 function playerMove(dir) {
   player.pos.x += dir;
   if (collide(arena, player)) player.pos.x -= dir;
 }
 
+// Helper function to rotate the player
 function playerRotate(dir) {
   const pos = player.pos.x;
   let offset = 1;
@@ -225,6 +280,7 @@ function playerRotate(dir) {
   }
 }
 
+// Helper function that assits with rotation
 function rotate(matrix, dir) {
   for (let y = 0; y < matrix.length; ++y) {
     for (let x = 0; x < y; ++x) {
@@ -235,11 +291,10 @@ function rotate(matrix, dir) {
   else matrix.reverse();
 }
 
-function playerReset() { 
-    
+// Helper function used to reset the player's position
+function playerReset() {
   player.matrix = nextPiece;
   nextPiece = createPiece("TJLOSZI"[Math.floor(Math.random() * 7)]);
-  drawPreview();
   player.pos.y = 0;
   player.pos.x = (arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0);
 
@@ -249,13 +304,15 @@ function playerReset() {
   if (collide(arena, player)) endGame(false);
 }
 
+// Helper method used to draw a preview of the next player piece
+// Note: Functionality is currently not used for screen real estate purposes
 function drawPreview() {
   const preview = document.getElementById("preview");
   const ctx = preview.getContext("2d");
 
-  ctx.setTransform(1, 0, 0, 1, 0, 0); 
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, preview.width, preview.height);
-  ctx.scale(20, 20); 
+  ctx.scale(20, 20);
 
   const gridSize = 4;
   const pieceWidth = nextPiece[0].length;
@@ -277,59 +334,122 @@ function drawPreview() {
   });
 }
 
+// Helper function used to update the HUD elements
 function updateHUD() {
   document.getElementById("score-display").textContent = player.score;
   document.getElementById("level-display").textContent = player.level;
 }
 
+// Helper function used to show the help overlay 
+function showHelp() {
+  pauseGame();
+  document.getElementById("help-overlay").classList.remove("hidden");
+}
+
+// Helper function used to hide the help overlay 
+function closeHelp() {
+  document.getElementById("help-overlay").classList.add("hidden");
+  pauseGame();
+}
+
+
+//----------------------------------
+//  Core Gameplay Logic
+//----------------------------------
+//  Used to update the timing, drop pieces, and redraw the game
 function update(time = 0) {
-  const deltaTime = time - lastTime;
+  if (isPaused) return;
+
+  const deltaTime = Math.min(time - lastTime, 100);
   lastTime = time;
   dropCounter += deltaTime;
-  if (dropCounter > dropInterval) playerDrop();
+
+  if (dropCounter > dropInterval) {
+    playerDrop();
+  }
+
   draw();
   requestAnimationFrame(update);
 }
 
+// Used to pause the game 
+function pauseGame() {
+  const pauseBtn = document.getElementById("pause-btn");
+  const pauseOverlay = document.getElementById("pause-overlay");
+
+  isPaused = !isPaused;
+
+  pauseBtn.innerHTML = isPaused
+    ? '<i class="fas fa-play"></i>'
+    : '<i class="fas fa-pause"></i>';
+
+  if (isPaused) {
+    audio.music.pause();
+    pauseOverlay.classList.remove("hidden");
+  } else {
+    audio.music.play().catch(() => { });
+    pauseOverlay.classList.add("hidden");
+    update();
+  }
+}
+
+// Used to save handle the end of the game
 function endGame(won) {
   localStorage.setItem("blocbuster_score", player.score);
   window.location.href = `gameover.html?${won ? "win" : "fail"}`;
 }
 
+//----------------------------------
+//  Event Listeners
+//----------------------------------
+// Handles audio toggling
+document.getElementById("audio-toggle").addEventListener("click", () => {
+  audioMuted = !audioMuted;
+
+  Object.values(audio).forEach(audio => {
+    audio.muted = audioMuted;
+  });
+
+  const icon = document.querySelector("#audio-toggle i");
+  icon.className = audioMuted ? "fas fa-volume-mute" : "fas fa-volume-up";
+});
+
+// Handles keyboard events
 document.addEventListener("keydown", e => {
+  if (isPaused) return;
+
+  // Skip repeats only for rotation keys
+  if (e.repeat && (e.key === "ArrowUp")) return;
+
   if (e.key === "ArrowLeft") playerMove(-1);
   if (e.key === "ArrowRight") playerMove(1);
   if (e.key === "ArrowDown") {
     playerDrop();
-    player.score += 1;
     updateHUD();
   }
   if (e.code === "Space") {
     hardDrop();
     updateHUD();
+    player.score += 1;
   }
   if (e.key === "ArrowUp") playerRotate(1);
-  if (e.key === "q") playerRotate(-1);
 });
 
-document.getElementById("back-btn").addEventListener("click", () => {
-  window.location.href = "index.html";
-});
-
+// Handles touch gesture events
 canvas.addEventListener("touchstart", e => {
   if (e.touches.length === 1) {
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
 
-    // Tap to drop faster
+    // Tap/hold to drop faster (soft drop)
     dropHoldTimer = setInterval(() => {
       playerDrop();
-      player.score += 1;
       updateHUD();
-    }, 120); 
+    }, 120);
   }
 });
 
+// Handles touch end events 
 canvas.addEventListener("touchend", e => {
   clearInterval(dropHoldTimer);
   dropHoldTimer = null;
@@ -350,72 +470,29 @@ canvas.addEventListener("touchend", e => {
       else playerMove(-1);
     } else {
       if (dy > 0) {
-        // swipe down (soft drop?)
+        // Swipe down (not used)
       } else {
-        hardDrop(); 
+        player.score += 1;
+        hardDrop();
       }
     }
   } else {
-    playerRotate(1); 
+    playerRotate(1);
   }
-
   startX = null;
   startY = null;
 });
 
-function pauseGame(){
-    const pauseBtn = document.getElementById("pause-btn");
-    isPaused = !isPaused;
-    pauseBtn.innerHTML = isPaused
-        ? '<i class="fas fa-play"></i><span>Play</span>'
-        : '<i class="fas fa-pause"></i><span>Pause</span>';
-        
-  if (!isPaused) update();
-}
+// Pause the game when user leaves the window
+window.addEventListener("blur", () => {
+  if (!isPaused) {
+    pauseGame();
+  }
+});
 
-function update(time = 0) {
-  if (isPaused) return;
-  const deltaTime = time - lastTime;
-  lastTime = time;
-  dropCounter += deltaTime;
-  if (dropCounter > dropInterval) playerDrop();
-  draw();
-  requestAnimationFrame(update);
-}
-
+//----------------------------------
+//  Misc
+//----------------------------------
+// Reset player and start the game
 playerReset();
 update();
-
-
-function flashLandedBlocks(matrix, pos) {
-  context.clearRect(0, 0, canvas.width, canvas.height);
-  drawMatrix(matrix, pos, "#fff"); // draw in white
-}
-
-function drawMatrix(matrix, offset, overrideColor = null) {
-  matrix.forEach((row, y) => {
-    row.forEach((value, x) => {
-      if (value !== 0) {
-        context.fillStyle = overrideColor || colors[value];
-        context.fillRect(x + offset.x, y + offset.y, 1, 1);
-        context.strokeStyle = "#111";
-        context.lineWidth = 0.05;
-        context.strokeRect(x + offset.x, y + offset.y, 1, 1);
-      }
-    });
-  });
-}
-
-
-function scaleGameToFit() {
-  const container = document.querySelector(".game-container");
-  const scaleX = window.innerWidth / container.offsetWidth;
-  const scaleY = window.innerHeight / container.offsetHeight;
-  const scale = Math.min(scaleX, scaleY, 1);
-  container.style.transform = `scale(${scale})`;
-}
-
-window.addEventListener("load", scaleGameToFit);
-window.addEventListener("resize", scaleGameToFit);
-
-

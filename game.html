@@ -1,55 +1,77 @@
+<!--
+  Project: Bloc Buster
+  Description: Main gameplay screen.
+  Author: Dominique Thomas (github.com/dominique-thomas)
+  License: Shared publicly for demonstration purposes only. Reuse or redistribution not permitted without permission.
+-->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/icons/icon-180.png">
   <meta name="theme-color" content="#0ff">
-  <title>Bloc Buster</title>
+  
+  <title>Bloc Buster - Game</title>
+  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body>
-  <div class="game-container">
-    <div class="game-wrapper">
-    <div class="hud">
-      <div class="hud-block">
-        <div class="hud-label">Level</div>
-        <div id="level-display" class="hud-value">1</div>
+  <div class="arcade-container">
+    <div class="arcade-window">
+
+      <div id="pause-overlay" class="pause-overlay hidden">
+        <p><span class="blinking text-glow">PAUSED</span></p>
+        <p><button id="resume-btn" class="btn outline" onclick="pauseGame()">RESUME</button></p>
       </div>
-      <div class="hud-block">
-        <div class="hud-label">Score</div>
-        <div id="score-display" class="hud-value">0</div>
+
+      <div class="game-container">
+        <div class="hud-top-centered">
+          <span class="player-label text-glow">LVL <span id="level-display">1</span></span>
+
+          <div class="controls">
+            <button id="pause-btn" class="icon-btn" onclick="pauseGame()">
+              <i class="fas fa-pause"></i>
+            </button>
+            <button id="audio-toggle" class="icon-btn">
+              <i class="fas fa-volume-up"></i>
+            </button>
+            <button id="help-btn" class="icon-btn" onclick="showHelp()">
+              <i class="fas fa-question-circle"></i>
+            </button>
+          </div>
+
+          <span class="high-score text-glow">SCORE <span id="score-display">000000</span></span>
+        </div>
+        <div class="game-wrapper">
+          <canvas id="game" width="240" height="400" class="pulseGlow"></canvas>
+        </div>
       </div>
+
+      <div id="help-overlay" class="popup-overlay hidden">
+        <div id="help-popup" class="popup">
+          <button id="close-help-x" class="icon-btn close-x" aria-label="Close" onclick="closeHelp()">
+            <i class="fas fa-times"></i>
+          </button>
+
+          <img src="images/controls.png" alt="Controls" class="controls-image">
+        </div>
+      </div>
+
     </div>
 
-      <canvas id="game" width="240" height="400"></canvas>
-
-      <div class="hud hud-right">
-        <canvas id="preview" width="80" height="80"></canvas>
-      </div>
+    <div class="marquee-text">
+      <h1 class="title glitch emphasis" data-text="BLOC BUSTER">BLOC BUSTER</h1>
     </div>
 
-
-    <div class="controls">
-      <button id="pause-btn" class="btn outline" onclick="pauseGame()">
-        <i class="fas fa-pause"></i>
-        <span>Pause</span>
-      </button>
-      <button id="audio-toggle" class="btn outline">
-        <i class="fas fa-music"></i> <span>Mute</span>
-      </button>
-      </button>
-      <button id="back-btn" class="btn outline">
-        <i class="fas fa-arrow-left"></i>
-        <span>Menu</span>
-      </button>
-    </div>
-    
-   </div> 
-
-
-
+    <div class="arcade-overlay"></div>
+  </div>
   <script src="js/game.js"></script>
 </body>
 </html>

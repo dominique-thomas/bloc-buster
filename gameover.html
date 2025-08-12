@@ -1,27 +1,51 @@
+<!--
+  Project: Bloc Buster
+  Description: Displays game over screen and score.
+  Author: Dominique Thomas (github.com/dominique-thomas)
+  License: Shared publicly for demonstration purposes only. Reuse or redistribution not permitted without permission.
+-->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Bloc Buster</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/icons/icon-180.png">
+  <meta name="theme-color" content="#0ff">
+
+  <title>Bloc Buster - Game Over</title>
+  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
-<body>
-  <div class="game-over-screen">
-    <h1 id="game-result">Game Over</h1>
-    <p id="final-score">Final Score: 0</p>
-    <div id="name-entry" class="hidden">
-        <label for="name-input">Name:</label>
-        <input type="text" id="name-input" maxlength="10" value="DOM">
-        <button id="save-name" class="btn">Save</button>
-    </div>
-    <div id="leaderboard"></div>
-    <button id="back-btn" class="btn outline">Back to Menu</button>
-  </div>
 
-  <button id="clear-storage" class="btn outline hidden">Clear Leaderboard</button>
+<body>
+
+  <div class="arcade-container">
+    <div class="arcade-window">
+      <div class="game-over-screen">
+        <h2 id="game-over" class="text-glow blinking">GAME OVER</h2>
+        <p id="final-score" class="text-glow">FINAL SCORE 006000</p>
+        <div id="leaderboard"></div>
+        <div id="name-entry" class="hidden">
+          <input type="text" id="name-input" maxlength="3" placeholder="CPU">
+          <button id="save-name" class="btn small">SAVE</button>
+        </div>
+        <button id="back-btn" class="btn outline">TRY AGAIN</button>
+      </div>
+    </div>
+
+    <div class="marquee-text">
+      <h1 class="title glitch emphasis" data-text="BLOC BUSTER">BLOC BUSTER</h1>
+    </div>
+
+    <div class="arcade-overlay"></div>
+    <button id="clear-storage" class="btn outline hidden">CLEAR DATA</button>
+  </div>
 
   <script src="js/gameover.js"></script>
 </body>
+
 </html>
