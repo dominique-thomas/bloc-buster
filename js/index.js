@@ -58,9 +58,9 @@ document.getElementById("start-btn").addEventListener("click", () => {
 
 // Event listener that registers the PWA service worker
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js").catch(console.error);
-  });
+    navigator.serviceWorker.register("/bloc-buster/sw.js")
+        .then(() => console.log("Service Worker Registered"))
+        .catch((error) => console.log("Service Worker Registration Failed:", error));
 }
 
 // Event listener that hides the install button if it still exists
