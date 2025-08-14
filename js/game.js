@@ -38,6 +38,7 @@ let flashCells = [];
 let flashUntil = 0;
 let startX = 0;
 let startY = 0;
+let lastStepX = null;
 let dropHoldTimer = 0;
 let nextPiece = createPiece("TJLOSZI"[Math.floor(Math.random() * 7)]);
 let audioMuted = false;
@@ -437,19 +438,40 @@ document.addEventListener("keydown", e => {
 
 // Handles touch gesture events
 canvas.addEventListener("touchstart", e => {
-  if (e.touches.length === 1) {
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
+  if (e.touches.length !== 1) return;
 
-    // Tap/hold to drop faster (soft drop)
-    dropHoldTimer = setInterval(() => {
-      playerDrop();
-      updateHUD();
-    }, 120);
+  const touch = e.touches[0];
+  startX = touch.clientX;
+  startY = touch.clientY;
+  startT = performance.now();
+  lastStepX = startX;
+
+  // Tap/hold to drop faster (soft drop)
+  dropHoldTimer = setInterval(() => {
+    playerDrop();
+    updateHUD();
+  }, 120);
+}, { passive: true });
+
+// Handles touch move events
+canvas.addEventListener("touchmove", e => {
+  if (startX === null || startY === null) return;
+
+  const t = e.touches[0];
+  const dx = t.clientX - startX;
+  const dy = t.clientY - startY;
+
+  if (Math.abs(dx) > 12 && Math.abs(dx) > 1.2 * Math.abs(dy)) {
+    const stepDelta = t.clientX - lastStepX;
+    if (Math.abs(stepDelta) >= 18) {
+      const dir = stepDelta > 0 ? 1 : -1;
+      playerMove(dir);
+      lastStepX += dir * 18;
+    }
   }
-});
+}, { passive: true });
 
-// Handles touch end events 
+// Handles touch end events
 canvas.addEventListener("touchend", e => {
   clearInterval(dropHoldTimer);
   dropHoldTimer = null;
@@ -462,16 +484,16 @@ canvas.addEventListener("touchend", e => {
   const dy = endY - startY;
   const absX = Math.abs(dx);
   const absY = Math.abs(dy);
+  const duration = performance.now() - startT;
 
-  // Swipe left or right
-  if (Math.max(absX, absY) > swipeThreshold) {
+  // Swipe detection (for quick moves only)
+  if (Math.max(absX, absY) > (typeof swipeThreshold !== 'undefined' ? swipeThreshold : 24)) {
     if (absX > absY) {
+      // Left or right swipe
       if (dx > 0) playerMove(1);
       else playerMove(-1);
     } else {
-      if (dy > 0) {
-        // Swipe down (not used)
-      } else {
+      if (dy < 0) {
         player.score += 1;
         hardDrop();
       }
@@ -479,6 +501,7 @@ canvas.addEventListener("touchend", e => {
   } else {
     playerRotate(1);
   }
+
   startX = null;
   startY = null;
 });
