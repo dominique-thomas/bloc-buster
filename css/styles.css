@@ -38,10 +38,6 @@ body {
   height: 100%;
 }
 
-.arcade-overlay,
-.marquee-text,
-.arcade-window { transform: translateX(var(--cab-nudge-x)); }
-
 .arcade-overlay {
   background: url('../images/Bloc_Buster_Arcade_Overlay.png') center center no-repeat;
   background-size: auto 100%;
@@ -504,6 +500,12 @@ canvas {
   .marquee-text h1 {
     font-size: clamp(1rem, 6vmin, 3rem);
   }
+}
 
-   :root { --cab-nudge-x: -4px; } 
+@media (max-width: 480px) {
+  :root { --cab-nudge-x: -1.5px; }
+}
+
+@media (min-width: 481px) and (max-width: 600px) {
+  :root { --cab-nudge-x: -0.5px; }
 }
