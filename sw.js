@@ -1,19 +1,33 @@
-// sw.js
 const CACHE = "blocbuster-v1";
 const ASSETS = [
-  "/",
-  "/index.html",
-  "/game.html",
-  "/gameover.html",
-  "/images/Bloc_Buster_Arcade_Overlay.png",
-  "/css/styles.css",
-  "/js/index.js",
-  "/js/game.js",
-  "/js/gameover.js",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png",
-  "/icons/icon-180.png",  
-  "/manifest.json"
+  "/bloc-buster/",
+
+  "/bloc-buster/index.html",
+  "/bloc-buster/game.html",
+  "/bloc-buster/gameover.html",
+
+  "/bloc-buster/images/Bloc_Buster_Arcade_Overlay.png",
+  "/bloc-buster/images/controls.png",
+
+  "/bloc-buster/css/styles.css",
+
+  "/bloc-buster/js/index.js",
+  "/bloc-buster/js/game.js",
+  "/bloc-buster/js/gameover.js",
+
+  "/bloc-buster/icons/icon-16.png",
+  "/bloc-buster/icons/icon-32.png",
+  "/bloc-buster/icons/icon-180.png",  
+  "/bloc-buster/icons/icon-192.png",  
+  "/bloc-buster/icons/icon-512.png",  
+
+  "/bloc-buster/sfx/clear.wav",
+  "/bloc-buster/sfx/clear_2.wav",
+  "/bloc-buster/sfx/gameOver.wav",
+  "/bloc-buster/sfx/levelUp.wav",
+  "/bloc-buster/sfx/theme.wav",
+
+  "/bloc-buster/manifest.json"
 ];
 
 self.addEventListener("install", (e) => {
