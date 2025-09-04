@@ -275,7 +275,7 @@ canvas {
   justify-content: space-between;
   align-items: center;
   gap: 3rem;
-  padding: 0.5rem .5rem;
+  padding: 0.5rem 0.5rem;
   font-size: 0.7rem;
 }
 
@@ -508,4 +508,17 @@ canvas {
     height: auto;
   }
 
+  .hud-top-centered {
+    gap: 1rem;
+  }
+
+  .icon-btn {
+    font-size: 0.8rem;
+  }
+
+  .hud-bottom,
+  .hud-top,
+  .hud-top-centered {
+    font-size: 0.5rem;
+  }
 }
