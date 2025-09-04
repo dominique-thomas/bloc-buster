@@ -1,6 +1,6 @@
 # Bloc Buster
 
-Bloc Buster is a **retro-inspired** falling block puzzle game with a neon arcade look and feel. It’s built for fun and as a coding portfolio piece, featuring custom visuals, music, and an arcade cabinet–style UI — all in the browser.
+Bloc Buster is a **retro-inspired** falling block puzzle game with a neon arcade look and feel. It’s built for fun and as a coding portfolio piece, featuring custom visuals, music, and an arcade cabinet–style UI.
 
 ## Features
 - Neon cyan/pink arcade aesthetic
